@@ -2,13 +2,17 @@
 using System.Net.Sockets;
 using System.Net;
 using System.Text;
+using System.Text.Json;
+using TCP_Server;
 
-namespace MultiClient
+namespace TCP_Client
 {
-    class Program
+    class Client
     {
         private static readonly Socket ClientSocket = new Socket
             (AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+        private static bool IsWaiting = true;
 
 
         static void Main()
@@ -21,41 +25,36 @@ namespace MultiClient
 
         private static void ConnectToServer()
         {
-
             while (!ClientSocket.Connected)
             {
                 try
                 {
-                    // Change IPAddress.Loopback to a remote IP to connect to a remote host.
                     ClientSocket.Connect(IPAddress.Loopback, 888);
                 }
                 catch (SocketException)
                 {
-                    Console.Clear();
+                    Console.WriteLine("Could not connect to the server");
                 }
             }
-
-            Console.Clear();
             Console.WriteLine("Connected");
+            SendString("hello");
         }
 
         private static void RequestLoop()
         {
-            Console.WriteLine(@"<Type ""exit"" to properly disconnect client>");
+            Console.WriteLine(@"Type 'exit' to properly disconnect client");
 
             while (true)
             {
-                SendRequest();
+                if(!IsWaiting)
+                    SendRequest();
                 ReceiveResponse();
             }
         }
 
-        /// <summary>
-        /// Close socket and exit program.
-        /// </summary>
         private static void Exit()
         {
-            SendString("exit"); // Tell the server we are exiting
+            SendString("exit"); 
             ClientSocket.Shutdown(SocketShutdown.Both);
             ClientSocket.Close();
             Environment.Exit(0);
@@ -66,6 +65,7 @@ namespace MultiClient
             Console.Write("Send a request: ");
             string request = Console.ReadLine();
             SendString(request);
+            IsWaiting = true;
 
             if (request.ToLower() == "exit")
             {
@@ -73,9 +73,6 @@ namespace MultiClient
             }
         }
 
-        /// <summary>
-        /// Sends a string to the server with ASCII encoding.
-        /// </summary>
         private static void SendString(string text)
         {
             byte[] buffer = Encoding.ASCII.GetBytes(text);
@@ -90,7 +87,9 @@ namespace MultiClient
             var data = new byte[received];
             Array.Copy(buffer, data, received);
             string text = Encoding.ASCII.GetString(data);
-            Console.WriteLine(text);
+            var deserializedMessage = JsonSerializer.Deserialize<Message>(text);
+            Console.WriteLine(deserializedMessage.Text);
+            IsWaiting = deserializedMessage.Wait;
         }
     }
 }

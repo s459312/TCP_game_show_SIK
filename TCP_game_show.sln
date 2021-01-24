@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TCP_Server", "TCP_game_show\TCP_Server.csproj", "{CE0E96F2-4CB0-4AC2-BD0F-1CE73770E1C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TCP_Server", "TCP_game_show\TCP_Server.csproj", "{CE0E96F2-4CB0-4AC2-BD0F-1CE73770E1C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TCP_Client", "TCP_Client\TCP_Client.csproj", "{FC5C7EC7-7EA1-4FFD-A8AF-144940D6BD2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TCP_Client", "TCP_Client\TCP_Client.csproj", "{FC5C7EC7-7EA1-4FFD-A8AF-144940D6BD2C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
