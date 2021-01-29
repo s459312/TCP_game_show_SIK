@@ -4,6 +4,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using TCP_Server;
+using System.Runtime.InteropServices;
 
 namespace TCP_Client
 {
@@ -13,8 +14,6 @@ namespace TCP_Client
             (AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
         private static bool IsWaiting = true;
-
-
         static void Main()
         {
             Console.Title = "Client";

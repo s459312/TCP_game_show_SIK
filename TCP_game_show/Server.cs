@@ -18,7 +18,7 @@ namespace TCP_Server
         {
             Console.Title = "Game Server";
             SetupServer();
-            Console.ReadLine(); // When we press enter close everything
+            Console.ReadLine(); 
             CloseAllSockets();
         }
 
@@ -31,10 +31,6 @@ namespace TCP_Server
             Console.WriteLine("Server setup complete");
         }
 
-        /// <summary>
-        /// Close all connected client (we do not need to shutdown the server socket as its connections
-        /// are already closed with the clients).
-        /// </summary>
         private static void CloseAllSockets()
         {
             foreach (Socket socket in clientSockets)
@@ -54,7 +50,7 @@ namespace TCP_Server
             {
                 socket = serverSocket.EndAccept(ar);
             }
-            catch (ObjectDisposedException) // I cannot seem to avoid this (on exit when properly closing sockets)
+            catch (ObjectDisposedException)
             {
                 return;
             }
@@ -76,8 +72,7 @@ namespace TCP_Server
             }
             catch (SocketException)
             {
-                Console.WriteLine("Client forcefully disconnected");
-                // Don't shutdown because the socket may be disposed and its disconnected anyway.
+                Console.WriteLine("Client disconnected");
                 current.Close();
                 clientSockets.Remove(current);
                 return;
@@ -103,7 +98,7 @@ namespace TCP_Server
 
                 SendMessage(message, current);
              }
-             else if (clientSockets[0] == current && text.ToLower() == "start" && game.IsStarted == false) 
+             else if (clientSockets[0] == current && text.ToLower() == "start" && game.IsStarted == false)
              {
                  serverSocket.Close();
                  GameStart();
@@ -146,14 +141,18 @@ namespace TCP_Server
                 else if (game.CurrentQuestion.Answer != answerId && answerId != null) 
                 {
                      player.Points -= 2;
-                     SendMessage(new Message("You have lost 2 points", false), current);
+                     SendMessage(new Message("You have lost 2 points", true), current);
                      player.WrongAnswers++;
+                     player.IsWaiting = true;
+                     if (Players.All(x => x.IsWaiting))
+                     {
+                         SendToAll(new Message("All players answered incorrectly, generating new question...", true));
+                         SelectQuestion();
+                     }
                 }
-                //else if(Thread.Sleep(5000))
              }
-             else if (text.ToLower() == "exit") // Client wants to exit gracefully
+             else if (text.ToLower() == "exit") 
              {
-                 // Always Shutdown before closing
                  current.Shutdown(SocketShutdown.Both);
                  current.Close();
                  clientSockets.Remove(current);
@@ -173,14 +172,17 @@ namespace TCP_Server
             var rnd = new Random();
             var r = rnd.Next(Questions.Count);
             var question = Questions[r];
+            foreach (var player in Players)
+            {
+                player.IsWaiting = false;
+            }
             game.CurrentQuestion = question;
             IsBlocked(new Message(question.Text, false));
         }
-
         private static void GameStart()
         {
             game.IsStarted = true;
-            SendToAll(new Message("Game has been started" +
+            SendToAll(new Message("\nGame has been started" +
                                       "\nType 'true' or 'false' to answer the questions", true));
         }
         private static void SendToAll(Message message)
@@ -197,6 +199,8 @@ namespace TCP_Server
                 var player = Players.SingleOrDefault(x => x.Id == socket.Handle.ToInt32());
                 if (player.WrongAnswers == 3)
                 {
+                    player.IsWaiting = true;
+                    player.WrongAnswers = 0;
                     SendMessage(new Message("You have answered wrong 3 times in a row, wait a turn", true), socket);
                 }
                 else SendMessage(message, socket);

@@ -12,6 +12,7 @@ namespace TCP_Server
             Points = 0;
             WrongAnswers = 0;
         }
+        public bool IsWaiting { get; set; }
         public int Id { get; set; }
         public int Points { get; set; }
         public int WrongAnswers { get; set; }
