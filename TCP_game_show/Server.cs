@@ -148,7 +148,8 @@ namespace TCP_Server
                      {
                          SendToAll(new Message("All players answered incorrectly, generating new question...", true));
                          SelectQuestion();
-                     }
+                         game.NumberOfQuestions++;
+                     } 
                 }
              }
              else if (text.ToLower() == "exit") 
